@@ -2,14 +2,17 @@
 pragma solidity ^0.8.20;
 
 
-contract crowdfunding {
+contract Crowdfunding {
     address public owner;
     mapping(address => uint256) public funder;
     uint256 public deadline;
-    uint256 public target;
+    uint256 public targetFund;
     uint256 public amount;
     uint256 public deploymentTime;
     uint256 public funded;
+    bool public fundsWithdrawn;
+    string public name;
+
     enum Status{
       Preparing,
       Funding,
@@ -19,10 +22,14 @@ contract crowdfunding {
     }
     Status public status;
 
+    event Funded(address indexed _funder, uint256 _amount);
+    event OwnerWithdraw(uint256 _amount);
+    event FunderWithdraw(address _funder, uint256 _amount);
+
     constructor(uint256 _target){
       deploymentTime = block.timestamp;
       deadline = deploymentTime + 100000000;
-      target = _target;
+      targetFund = _target;
       status = status;
     }
 
@@ -46,6 +53,20 @@ contract crowdfunding {
       return address(this).balance;
     }
 
+  function isFundEnabled() public view returns(bool) {
+        if (block.timestamp > deadline || fundsWithdrawn) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
+    function isFundSuccess() public view returns(bool) {
+        if(address(this).balance >= targetFund) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
