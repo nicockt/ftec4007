@@ -84,9 +84,9 @@ contract Crowdfunding {
     }
 
     // Cancel project before funding
-    function cancel(uint256 _id) external { "Project with the given ID does not exist.");
+    function cancel(uint256 _id) external { 
         Project storage project = projects[_id];
-        require(project.startAt != 0, "Project not exists")
+        require(project.startAt != 0, "Project not exists");
         require(project.owner == msg.sender, "not creator");
         require(block.timestamp < project.startAt, "started");
 
@@ -97,7 +97,7 @@ contract Crowdfunding {
     // Owner get money after crowdfunding success
     function withdrawOwner(uint256 _id) external {
           Project storage project = projects[_id];
-        require(project.startAt != 0, "Project not exists")
+          require(project.startAt != 0, "Project not exists");
           require(msg.sender == project.owner, "Not authorized!");
           require(project.raisedFund >= project.targetFund, "Not meet target");
           require(block.timestamp > project.endAt, "not ended");
@@ -113,7 +113,7 @@ contract Crowdfunding {
     // Funder invest
     function fund(uint256 _id) external payable {
           Project storage project = projects[_id];
-        require(project.startAt != 0, "Project not exists")
+          require(project.startAt != 0, "Project not exists");  
           require(block.timestamp >= project.startAt, "Not started yet");
           require(block.timestamp <= project.endAt, "Ended");
 
@@ -129,7 +129,7 @@ contract Crowdfunding {
     // Optional: Funder get back investment during funding
     function withdrawFunder(uint256 _id) external  {
         Project storage project = projects[_id];
-        require(project.startAt != 0, "Project not exists")
+        require(project.startAt != 0, "Project not exists");
         require(block.timestamp <= project.endAt, "Ended");
         require(project.funders[msg.sender] > 0, "You are not a contributor");
 
@@ -147,7 +147,7 @@ contract Crowdfunding {
     // Fund refund after crowdfunding fails
     function refund(uint256 _id) external {
           Project storage project = projects[_id];
-          require(project.startAt != 0, "Project not exists")
+          require(project.startAt != 0, "Project not exists");
           require(block.timestamp > project.endAt, "not end!");
           require(project.funders[msg.sender]>0, "You are not a contributor");
           require(project.raisedFund < project.targetFund, "raisedFund > targetFund");
