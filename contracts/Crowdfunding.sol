@@ -63,10 +63,6 @@ contract Crowdfunding {
         emit Launch(projectCount, _projectName, msg.sender, _targetFund, _startAt, _endAt);
     }
 
-    // function createFund() external payable {
-    //   funders[msg.sender] = msg.value;
-    // }
-
     function getMyFund(uint256 projectId) public view returns(uint256) {
       return projects[projectId].funders[msg.sender];
     }
@@ -83,7 +79,7 @@ contract Crowdfunding {
       return projects[projectId].raisedFund >= projects[projectId].targetFund;
     }
 
-    // Cancel project before funding
+    // Owner cancel project before funding
     function cancel(uint256 _id) external { 
         Project storage project = projects[_id];
         require(project.startAt != 0, "Project not exists");
@@ -126,7 +122,7 @@ contract Crowdfunding {
           emit Fund(_id, msg.sender, msg.value);
       }
     
-    // Optional: Funder get back investment during funding
+    // Funder get back funding before project ends
     function withdrawFunder(uint256 _id) external  {
         Project storage project = projects[_id];
         require(project.startAt != 0, "Project not exists");
@@ -144,7 +140,7 @@ contract Crowdfunding {
         emit FunderWithdraw(_id, msg.sender, amountToSend);
     }
 
-    // Fund refund after crowdfunding fails
+    // Refund to funder after project fails
     function refund(uint256 _id) external {
           Project storage project = projects[_id];
           require(project.startAt != 0, "Project not exists");
