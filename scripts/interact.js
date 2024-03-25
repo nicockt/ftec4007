@@ -15,11 +15,11 @@ const alchemyProvider = new ethers.providers.JsonRpcProvider(API_URL);
 const signer = new ethers.Wallet(PRIVATE_KEY, alchemyProvider);
 // Contract: Ethers.js object representing a specific contract deployed on-chain
 const crowdfundingContract = new ethers.Contract(
-  CONTRACT_ADDRESS,
+  CROWDFUNDING_ADDRESS,
   crowdfunding.abi,
   signer
 );
-const nftContract = new ethers.Contract(CONTRACT_ADDRESS, nft.abi, signer);
+const nftContract = new ethers.Contract(NFT_ADDRESS, nft.abi, signer);
 
 async function main() {
   const projectName = "project1";
