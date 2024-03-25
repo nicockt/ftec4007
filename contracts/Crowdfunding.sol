@@ -17,6 +17,7 @@ contract Crowdfunding {
       bool ownerWithdrawn;
       mapping(address => uint256) funders; // address -> amountDonated
       string projectName;
+      string description;
     }
 
     uint256 public projectCount = 0; // count total number of existing project
@@ -33,7 +34,11 @@ contract Crowdfunding {
 
     fallback() external payable { } 
 
-    function launch(string memory _projectName, uint256 _targetFund, uint256 _startAt, uint256 _endAt) external {
+    function launch(string memory _projectName, string memory _description, uint256 _targetFund, uint256 _startFromNow, uint256 _duration) external {
+        uint256 _startAt = block.timestamp + _startFromNow;
+        uint256 _endAt = _startAt + _duration;
+        require(_duration > 0, "duration <= 0");
+        require(_startFromNow >= 0, "startFromNow < 0");
         require(_startAt >= block.timestamp, "start at < now");
         require(_endAt > _startAt, "end at <= start at");
         require(_endAt <= block.timestamp + 730 days, "end at > max duration (2 years)");
@@ -47,6 +52,7 @@ contract Crowdfunding {
         newProject.endAt = _endAt;
         newProject.startAt = _startAt;
         newProject.projectName = _projectName;
+        newProject.description = _description;
         newProject.ownerWithdrawn = false;
         
 
