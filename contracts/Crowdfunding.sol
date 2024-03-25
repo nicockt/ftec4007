@@ -8,16 +8,6 @@ interface IERC20 {
 
 
 contract Crowdfunding {
-    // address public owner;
-    // mapping(address => uint256) public funders; //mapping funder address to fund amount
-    // uint256 public deadline;
-    // uint256 public targetFund;
-    // uint256 public raisedFund;
-    // uint256 public deploymentTime;
-    // uint256 public funded;
-    // bool public ownerWithdrawn;
-    // string public projectName;
-
     struct Project {
       address owner; // creator of project
       uint256 targetFund;
@@ -158,4 +148,3 @@ contract Crowdfunding {
       }
 
 }
-
