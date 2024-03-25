@@ -28,13 +28,30 @@ async function main() {
   const startFromNow = 10; // 10s from now
   const duration = 60 * 60 * 24 * 30; // 30 days
 
-  const project = await crowdfundingContract.launch(
+  const projectId = launchProject(
     projectName,
     desc,
     targetFund,
     startFromNow,
     duration
   );
-  await project.wait();
+  console.log(`Project ID: ${projectId}`);
 }
 main();
+
+const launchProject = async (
+  projectName,
+  desc,
+  targetFund,
+  startFromNow,
+  duration
+) => {
+  const projectId = await crowdfundingContract.launch(
+    projectName,
+    desc,
+    targetFund,
+    startFromNow,
+    duration
+  );
+  return projectId;
+};

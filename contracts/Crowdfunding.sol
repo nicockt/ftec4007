@@ -35,7 +35,7 @@ contract Crowdfunding {
 
     fallback() external payable { } 
 
-    function launch(string memory _projectName, string memory _description, uint256 _targetFund, uint256 _startFromNow, uint256 _duration) external {
+    function launch(string memory _projectName, string memory _description, uint256 _targetFund, uint256 _startFromNow, uint256 _duration) external returns (uint256){
         uint256 _startAt = block.timestamp + _startFromNow;
         uint256 _endAt = _startAt + _duration;
         require(_duration > 0, "duration <= 0");
