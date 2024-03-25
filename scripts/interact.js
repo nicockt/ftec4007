@@ -55,3 +55,18 @@ const launchProject = async (
   );
   return projectId;
 };
+
+const getTransfer = async () => {
+  crowdfundingContract.on("Transfer", (from, to, value, event) => {
+    console.log(`Transfer event! from: ${from}, to: ${to}, value: ${value}`);
+    let transferEvent = {
+      from: from,
+      to: to,
+      value: value,
+      eventData: event,
+    };
+    return transferEvent;
+  });
+};
+
+getTransfer();
