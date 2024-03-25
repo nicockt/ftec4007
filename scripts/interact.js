@@ -23,13 +23,14 @@ const nftContract = new ethers.Contract(NFT_ADDRESS, nft.abi, signer);
 
 async function main() {
   const projectName = "project1";
+  const desc = "First crowdfunding project!";
   const targetFund = "100"; // Wei
   const startFromNow = 10; // 10s from now
   const duration = 60 * 60 * 24 * 30; // 30 days
 
-  console.log("startAt", startAt, "endAt", endAt);
   const project = await crowdfundingContract.launch(
     projectName,
+    desc,
     targetFund,
     startFromNow,
     duration

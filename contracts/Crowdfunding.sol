@@ -9,6 +9,7 @@ interface IERC20 {
 
 contract Crowdfunding {
     struct Project {
+      uint256 id;
       address owner; // creator of project
       uint256 targetFund;
       uint256 raisedFund;
@@ -47,6 +48,7 @@ contract Crowdfunding {
         projectCount++;
         Project storage newProject = projects[projectCount];
         newProject.owner = msg.sender;
+        newProject.id = projectCount;
         newProject.targetFund = _targetFund;
         newProject.raisedFund = 0;
         newProject.endAt = _endAt;
@@ -56,7 +58,8 @@ contract Crowdfunding {
         newProject.ownerWithdrawn = false;
         
 
-        emit Launch(projectCount, _projectName, msg.sender, _targetFund, _startAt, _endAt);
+        emit Launch(newProject.id, _projectName, msg.sender, _targetFund, _startAt, _endAt);
+        return newProject.id;
     }
 
     function getMyFund(uint256 projectId) public view returns(uint256) {
@@ -74,6 +77,8 @@ contract Crowdfunding {
     function isSuccess(uint256 projectId)public view returns(bool){
       return projects[projectId].raisedFund >= projects[projectId].targetFund;
     }
+
+
 
     // Owner cancel project before funding
     function cancel(uint256 _id) external { 
