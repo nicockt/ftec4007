@@ -17,6 +17,7 @@ contract Crowdfunding {
       uint256 startAt;
       bool ownerWithdrawn;
       mapping(address => uint256) funders; // address -> amountDonated
+      address[] fundersAddress;
       string projectName;
       string description;
     }
@@ -27,6 +28,7 @@ contract Crowdfunding {
     event Cancel(uint256 _id);
     event Launch(uint256 _id, string _projectName, address indexed _owner, uint256 _targetFund, uint256 _startAt, uint256 _endAt);
     event Fund(uint256 indexed _id, address indexed _funder, uint256 _amount);
+    event SuccessFund(uint256 indexed _id, uint256 _raisedFund);
     event OwnerWithdraw(uint256 _id);
     event Refund(uint256 _id , address indexed _funder, uint256 _amount);
     event FunderWithdraw(uint256 indexed _id, address _funder, uint256 _amount);
@@ -74,6 +76,18 @@ contract Crowdfunding {
       return projects[projectId].endAt;
     }
 
+    function getFunders(uint256 _projectId)external view returns(address[] memory, uint245[] memory){
+      Project storage project = projects[_projectId];
+      address[] memory fundersArray = project.fundersAddress;
+      uint256[] memory funderAmounts = new uint256[](project.fundersAddress.length);
+
+      for (uint i = 0; i < project.fundersAddress.length; i++) {
+          funderAmounts[i] = project.funders[project.fundersAddress[i]];
+      }
+
+      return (fundersArray, funderAmounts);
+    }
+
     function isSuccess(uint256 projectId)public view returns(bool){
       return projects[projectId].raisedFund >= projects[projectId].targetFund;
     }
@@ -86,6 +100,8 @@ contract Crowdfunding {
         require(project.startAt != 0, "Project not exists");
         require(project.owner == msg.sender, "not creator");
         require(block.timestamp < project.startAt, "started");
+        require(project.raisedFund == 0, "already funded");
+        require(!project.ownerWithdrawn, "Owner already withdrawn");
 
         delete projects[_id];
         emit Cancel(_id);
@@ -119,8 +135,12 @@ contract Crowdfunding {
           require(success, "Unable to transfer funds to the contract.");
           project.raisedFund += msg.value;
           project.funders[msg.sender] += msg.value;
+          project.fundersAddress.push(msg.sender);
 
           emit Fund(_id, msg.sender, msg.value);
+          if (project.raisedFund >= project.targetFund) {
+            emit SuccessFund(_id, project.raisedFund);
+          }
       }
     
     // Funder get back funding before project ends
@@ -137,6 +157,17 @@ contract Crowdfunding {
         require(success, "unable to send!");
         project.raisedFund -= amountToSend;
         project.funders[msg.sender]=0;
+        uint256 indexToBeRemoved = 0;
+        for (uint i = 0; i < project.fundersAddress.length; i++) {
+            if (project.fundersAddress[i] == msg.sender) {
+                indexToBeRemoved = i;
+                break;
+            }
+        }
+        // Swap the funder to be removed with the last funder
+        project.fundersAddress[indexToBeRemoved] = project.fundersAddress[project.fundersAddress.length - 1];
+        project.fundersAddress.length--;
+
 
         emit FunderWithdraw(_id, msg.sender, amountToSend);
     }

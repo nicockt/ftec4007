@@ -56,17 +56,23 @@ const launchProject = async (
   return projectId;
 };
 
-const getTransfer = async () => {
-  crowdfundingContract.on("Transfer", (from, to, value, event) => {
-    console.log(`Transfer event! from: ${from}, to: ${to}, value: ${value}`);
-    let transferEvent = {
-      from: from,
-      to: to,
-      value: value,
+const getSuccessFundEvent = async () => {
+  crowdfundingContract.on("SuccessFund", (projectId, raisedFund, event) => {
+    console.log(`Project ID: ${projectId}, Raised Fund: ${raisedFund}`);
+    let successFundEvent = {
+      projectId: projectId,
+      raisedFund: raisedFund,
       eventData: event,
     };
-    return transferEvent;
+    console.log(successFundEvent);
+
+    // Get funders and amounts
+    const [funders, amounts] = getFunders(projectId);
   });
 };
+const getFunders = async (projectId) => {
+  const [funders, amounts] = await contractWithSigner.getFunders(projectId);
+  return { funders, amounts };
+};
 
-getTransfer();
+getSuccessFundEvent();
