@@ -21,24 +21,6 @@ const crowdfundingContract = new ethers.Contract(
 );
 const nftContract = new ethers.Contract(NFT_ADDRESS, nft.abi, signer);
 
-async function main() {
-  const projectName = "project1";
-  const desc = "First crowdfunding project!";
-  const targetFund = "100"; // Wei
-  const startFromNow = 10; // 10s from now
-  const duration = 60 * 60 * 24 * 30; // 30 days
-
-  const projectId = launchProject(
-    projectName,
-    desc,
-    targetFund,
-    startFromNow,
-    duration
-  );
-  console.log(`Project ID: ${projectId}`);
-}
-main();
-
 const launchProject = async (
   projectName,
   desc,
@@ -57,22 +39,54 @@ const launchProject = async (
 };
 
 const getSuccessFundEvent = async () => {
-  crowdfundingContract.on("SuccessFund", (projectId, raisedFund, event) => {
-    console.log(`Project ID: ${projectId}, Raised Fund: ${raisedFund}`);
-    let successFundEvent = {
-      projectId: projectId,
-      raisedFund: raisedFund,
-      eventData: event,
-    };
-    console.log(successFundEvent);
+  crowdfundingContract.on(
+    "SuccessFund",
+    async (projectId, raisedFund, event) => {
+      console.log(`Project ID: ${projectId}, Raised Fund: ${raisedFund}`);
+      let successFundEvent = {
+        projectId: projectId,
+        raisedFund: raisedFund,
+        eventData: event,
+      };
+      console.log(successFundEvent);
+      // const { funders, amounts } = await crowdfundingContract.getFunders(projectId);
+      const result = await crowdfundingContract.getFunders(projectId);
+      console.log(result);
+      const funders = result[0];
+      const amounts = result[1];
+      console.log(funders);
+      console.log(amounts);
 
-    // Get funders and amounts
-    const [funders, amounts] = getFunders(projectId);
-  });
-};
-const getFunders = async (projectId) => {
-  const [funders, amounts] = await contractWithSigner.getFunders(projectId);
-  return { funders, amounts };
+      // Mint NFTs to funders
+      for (let i = 0; i < funders.length; i++) {
+        const funder = funders[i];
+        const amount = amounts[i];
+
+        // Replace with your NFT minting logic
+        const tokenId = i; // Replace with your token ID logic
+
+        await nftContract.safeMint(funder, Math.floor(amount));
+        console.log(`Minted NFT to ${funder}`);
+      }
+    }
+  );
 };
 
-getSuccessFundEvent();
+async function main() {
+  const projectName = "project1";
+  const desc = "First crowdfunding project!";
+  const targetFund = "100"; // Wei
+  const startFromNow = 10; // 10s from now
+  const duration = 60 * 60 * 24 * 30; // 30 days
+
+  const projectId = launchProject(
+    projectName,
+    desc,
+    targetFund,
+    startFromNow,
+    duration
+  );
+  console.log(`Project ID: ${projectId}`);
+  getSuccessFundEvent();
+}
+main();
