@@ -177,7 +177,7 @@ contract Crowdfunding {
           require(project.startAt != 0, "Project not exists");
           require(block.timestamp > project.endAt, "not end!");
           require(project.funders[msg.sender]>0, "You are not a contributor");
-          require(project.raisedFund < project.targetFund, "raisedFund > targetFund");
+          require(project.ownerWithdrawn != true, "owner withdrawn");
 
           uint256 amountToSend = project.funders[msg.sender];
           (bool success,) = msg.sender.call{value: amountToSend}("");
