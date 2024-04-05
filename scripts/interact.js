@@ -22,23 +22,27 @@ const crowdfundingContract = new ethers.Contract(
 const nftContract = new ethers.Contract(NFT_ADDRESS, nft.abi, signer);
 
 const launchProject = async (
-  projectName,
-  desc,
-  targetFund,
-  startFromNow,
-  duration
+  projectName = "project",
+  desc = "default desc",
+  targetFund = 1000,
+  startFromNow = 10, // 10s from now
+  duration = 60 * 60 * 24 * 30 // 30 days
 ) => {
-  const projectId = await crowdfundingContract.launch(
+  if (projectName == "project") {
+    projectName = projectName + "-" + Date.now().toString();
+  }
+  var project = crowdfundingContract.launch(
     projectName,
     desc,
     targetFund,
     startFromNow,
     duration
   );
-  return projectId;
+  return project;
 };
 
 const getSuccessFundEvent = async () => {
+  console.log("Listening successFund Event");
   crowdfundingContract.on(
     "SuccessFund",
     async (projectId, raisedFund, event) => {
@@ -61,11 +65,7 @@ const getSuccessFundEvent = async () => {
       for (let i = 0; i < funders.length; i++) {
         const funder = funders[i];
         const amount = amounts[i];
-
-        // Replace with your NFT minting logic
-        const tokenId = i; // Replace with your token ID logic
-
-        await nftContract.safeMint(funder, Math.floor(amount));
+        await nftContract.safeMint(funder, Math.min(Math.floor(amount), 1));
         console.log(`Minted NFT to ${funder}`);
       }
     }
@@ -73,20 +73,22 @@ const getSuccessFundEvent = async () => {
 };
 
 async function main() {
-  const projectName = "project1";
-  const desc = "First crowdfunding project!";
-  const targetFund = "100"; // Wei
-  const startFromNow = 10; // 10s from now
-  const duration = 60 * 60 * 24 * 30; // 30 days
+  // try {
+  //   // Create new project
+  //   const projectId = await launchProject();
+  //   console.log(projectId);
+  //   console.log(`Project ID: ${projectId}`);
+  // } catch (error) {
+  //   console.error("Error launching project:", error);
+  // }
 
-  const projectId = launchProject(
-    projectName,
-    desc,
-    targetFund,
-    startFromNow,
-    duration
-  );
-  console.log(`Project ID: ${projectId}`);
+  // const fundTx = await crowdfundingContract.fund(2, {
+  //   value: ethers.utils.parseUnits("10", "wei"),
+  // });
+  // await fundTx.wait();
+  // console.log(fundTx);
+  // console.log("Funded");
+
   getSuccessFundEvent();
 }
 main();

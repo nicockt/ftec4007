@@ -76,7 +76,7 @@ contract Crowdfunding {
       return projects[projectId].endAt;
     }
 
-    function getFunders(uint256 _projectId)external view returns(address[] memory, uint245[] memory){
+    function getFunders(uint256 _projectId)external view returns(address[] memory, uint256[] memory){
       Project storage project = projects[_projectId];
       address[] memory fundersArray = project.fundersAddress;
       uint256[] memory funderAmounts = new uint256[](project.fundersAddress.length);
@@ -166,8 +166,7 @@ contract Crowdfunding {
         }
         // Swap the funder to be removed with the last funder
         project.fundersAddress[indexToBeRemoved] = project.fundersAddress[project.fundersAddress.length - 1];
-        project.fundersAddress.length--;
-
+        project.fundersAddress.pop();
 
         emit FunderWithdraw(_id, msg.sender, amountToSend);
     }
