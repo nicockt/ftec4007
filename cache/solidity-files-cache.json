@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/nico/Desktop/GitHub_Projects/ftec4007/contracts/Crowdfunding.sol": {
-      "lastModificationDate": 1712130653523,
-      "contentHash": "9bf28b7ed7958efaf452f163904c2688",
+      "lastModificationDate": 1713079784785,
+      "contentHash": "1b68d7d269137a0d1e7257c046c642ad",
       "sourceName": "contracts/Crowdfunding.sol",
       "solcConfig": {
         "version": "0.8.20",

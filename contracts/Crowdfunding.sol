@@ -98,7 +98,7 @@ contract Crowdfunding {
     function cancel(uint256 _id) external { 
         Project storage project = projects[_id];
         require(project.startAt != 0, "Project not exists");
-        require(project.owner == msg.sender, "not creator");
+        require(project.owner == msg.sender, "Not authorized!");
         require(block.timestamp < project.startAt, "started");
         require(project.raisedFund == 0, "already funded");
         require(!project.ownerWithdrawn, "Owner already withdrawn");
@@ -108,12 +108,11 @@ contract Crowdfunding {
     }
 
     // Owner get money after crowdfunding success
-    function withdrawOwner(uint256 _id) external {
+    function withdrawOwner(uint256 _id) external payable{
           Project storage project = projects[_id];
           require(project.startAt != 0, "Project not exists");
           require(msg.sender == project.owner, "Not authorized!");
           require(project.raisedFund >= project.targetFund, "Not meet target");
-          require(block.timestamp > project.endAt, "not ended");
           require(!project.ownerWithdrawn, "Owner already withdrawn");
 
           // Transfer fund to owner
@@ -144,11 +143,12 @@ contract Crowdfunding {
       }
     
     // Funder get back funding before project ends
-    function withdrawFunder(uint256 _id) external  {
+    function withdrawFunder(uint256 _id) external payable{
         Project storage project = projects[_id];
         require(project.startAt != 0, "Project not exists");
         require(block.timestamp <= project.endAt, "Ended");
         require(project.funders[msg.sender] > 0, "You are not a contributor");
+        require(project.ownerWithdrawn != true, "owner withdrawn");
 
         uint256 amountToSend = project.funders[msg.sender];
         
@@ -172,10 +172,11 @@ contract Crowdfunding {
     }
 
     // Refund to funder after project fails
-    function refund(uint256 _id) external {
+    function refund(uint256 _id) external payable{
           Project storage project = projects[_id];
           require(project.startAt != 0, "Project not exists");
           require(block.timestamp > project.endAt, "not end!");
+          require(project.raisedFund < project.targetFund, "Target met, cannot refund.");
           require(project.funders[msg.sender]>0, "You are not a contributor");
           require(project.ownerWithdrawn != true, "owner withdrawn");
 
