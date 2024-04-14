@@ -21,27 +21,7 @@ const crowdfundingContract = new ethers.Contract(
 );
 const nftContract = new ethers.Contract(NFT_ADDRESS, nft.abi, signer);
 
-const launchProject = async (
-  projectName = "project",
-  desc = "default desc",
-  targetFund = 1000,
-  startFromNow = 10, // 10s from now
-  duration = 60 * 60 * 24 * 30 // 30 days
-) => {
-  if (projectName == "project") {
-    projectName = projectName + "-" + Date.now().toString();
-  }
-  var project = crowdfundingContract.launch(
-    projectName,
-    desc,
-    targetFund,
-    startFromNow,
-    duration
-  );
-  return project;
-};
-
-const getSuccessFundEvent = async () => {
+const onSuccessFund = async () => {
   console.log("Listening successFund Event");
   crowdfundingContract.on(
     "SuccessFund",
@@ -73,22 +53,6 @@ const getSuccessFundEvent = async () => {
 };
 
 async function main() {
-  // try {
-  //   // Create new project
-  //   const projectId = await launchProject();
-  //   console.log(projectId);
-  //   console.log(`Project ID: ${projectId}`);
-  // } catch (error) {
-  //   console.error("Error launching project:", error);
-  // }
-
-  // const fundTx = await crowdfundingContract.fund(2, {
-  //   value: ethers.utils.parseUnits("10", "wei"),
-  // });
-  // await fundTx.wait();
-  // console.log(fundTx);
-  // console.log("Funded");
-
-  getSuccessFundEvent();
+  onSuccessFund();
 }
 main();
