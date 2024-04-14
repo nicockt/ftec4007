@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const API_URL = process.env.API_URL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const CROWDFUNDING_ADDRESS = process.env.CROWDFUNDING_ADDRESS;
@@ -21,38 +23,107 @@ const crowdfundingContract = new ethers.Contract(
 );
 const nftContract = new ethers.Contract(NFT_ADDRESS, nft.abi, signer);
 
-const onSuccessFund = async () => {
-  console.log("Listening successFund Event");
-  crowdfundingContract.on(
-    "SuccessFund",
-    async (projectId, raisedFund, event) => {
-      console.log(`Project ID: ${projectId}, Raised Fund: ${raisedFund}`);
-      let successFundEvent = {
-        projectId: projectId,
-        raisedFund: raisedFund,
-        eventData: event,
-      };
-      console.log(successFundEvent);
-      // const { funders, amounts } = await crowdfundingContract.getFunders(projectId);
-      const result = await crowdfundingContract.getFunders(projectId);
-      console.log(result);
-      const funders = result[0];
-      const amounts = result[1];
-      console.log(funders);
-      console.log(amounts);
-
-      // Mint NFTs to funders
-      for (let i = 0; i < funders.length; i++) {
-        const funder = funders[i];
-        const amount = amounts[i];
-        await nftContract.safeMint(funder, Math.min(Math.floor(amount), 1));
-        console.log(`Minted NFT to ${funder}`);
-      }
-    }
+const launchProject = async (
+  projectName = "project",
+  desc = "default desc",
+  targetFund = 10,
+  startFromNow = 10, // 10s from now
+  duration = 60 * 60 * 24 * 30 // 30 days
+) => {
+  if (projectName == "project") {
+    projectName = projectName + "-" + Date.now().toString();
+  }
+  const transaction = await crowdfundingContract.launch(
+    projectName,
+    desc,
+    targetFund,
+    startFromNow,
+    duration
   );
+
+  const receipt = await transaction.wait();
+
+  // Find the Launch event in the receipt
+  const launchEvent = receipt.events?.find((e) => e.event === "Launch");
+
+  if (launchEvent) {
+    return launchEvent.args;
+  }
+
+  return null;
 };
 
-async function main() {
-  onSuccessFund();
-}
+const transferNFT = async (projectId) => {
+  // const { funders, amounts } = await crowdfundingContract.getFunders(projectId);
+  const results = await crowdfundingContract.getFunders(projectId);
+  const funders = results[0];
+  const amounts = results[1];
+  console.log(funders);
+  console.log(amounts);
+
+  // Mint NFTs to funders
+  for (let i = 0; i < funders.length; i++) {
+    const funder = funders[i];
+    const amount = amounts[i].toNumber();
+    const nftAmount = Math.min(Math.floor(amount), 1);
+    await nftContract.safeMint(funder, nftAmount);
+    console.log(`Minted ${nftAmount} NFT to ${funder}`);
+  }
+};
+
+const fundProject = async (projectId, fundAmount) => {
+  var result = null;
+  const options = {
+    gasLimit: 3000000,
+    value: ethers.utils.parseUnits(fundAmount.toString(), "wei"),
+  };
+  const fundTx = await crowdfundingContract.fund(projectId, {
+    ...options,
+  });
+
+  const fundReceipt = await fundTx.wait();
+  const fundEvent = fundReceipt.events?.find((e) => e.event === "Fund");
+
+  if (fundEvent) {
+    console.log("Fund Success");
+    result = fundEvent.args;
+  }
+
+  const successFundEvent = fundReceipt.events?.find(
+    (e) => e.event === "SuccessFund"
+  );
+
+  if (successFundEvent) {
+    const successProjectId = successFundEvent.args._id.toNumber();
+    const raisedFund = successFundEvent.args._raisedFund.toNumber();
+    console.log(
+      `Project ${successProjectId}: Funding met target amount, raised amount: ${raisedFund} wei`
+    );
+    result = successFundEvent.args;
+    await transferNFT(successProjectId);
+  }
+  return result;
+};
+
+const main = async () => {
+  //   const project = await launchProject();
+  //   if (project === null) {
+  //     console.log("Fail to launch project");
+  //     return;
+  //   }
+
+  //   const projectId = parseInt(project._id);
+  //   const projectName = project._projectName.toString();
+  //   const projectOwner = project._owner.toString();
+  //   const targetFund = project._targetFund.toString();
+  //   const endUnix = parseInt(project._endAt);
+  //   const endDate = new Date(endUnix * 1000);
+  //   formattedEndDate = endDate.toGMTString();
+  //   console.log(
+  //     `Project Created - ID: ${projectId}, name: ${projectName}, owner: ${projectOwner}, targetFund: ${targetFund}, endDate: ${formattedEndDate}`
+  //   );
+
+  const fundEvent = fundProject(11, 10);
+};
+
 main();

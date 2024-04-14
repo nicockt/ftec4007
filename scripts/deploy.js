@@ -13,7 +13,7 @@ async function main() {
     crowdfunding.address
   );
 
-  const nft = await NFT.deploy(crowdfunding.address);
+  const nft = await NFT.deploy(process.env.OWNER_ADDRESS);
   console.log("NFT Contract deployed to address:", nft.address);
 }
 

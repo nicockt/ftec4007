@@ -14,7 +14,7 @@ contract NFT is ERC721, ERC721Enumerable, ERC721Pausable, Ownable, ERC721Burnabl
     uint256 private _nextTokenId;
     mapping(address => uint256[]) private _mintedTokens;
     uint256 private _tokenIdCounter;
-    uint256 public maxmint = 10;
+    uint256 public maxmint = 10000;
     uint256 public currentMint;
 
     constructor(address initialOwner)
