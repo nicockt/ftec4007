@@ -1,9 +1,7 @@
-require("dotenv").config();
-
 const API_URL = process.env.API_URL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const CROWDFUNDING_ADDRESS = process.env.CROWDFUNDING_ADDRESS;
-const NFT_ADDRESS = process.env.NFT_ADDRESS;
+const CROWDFUNDING_ADDRESS = "0x51db8d67f51730D11718a64476D4F562aD82f91f";
+const NFT_ADDRESS = "0xE18d60A586AEa0d58473eD80FC656541d8f72036";
 
 // Get ABI for Hardhat
 const crowdfunding = require("../artifacts/contracts/Crowdfunding.sol/Crowdfunding.json");
@@ -30,6 +28,7 @@ const launchProject = async (
   startFromNow = 10, // 10s from now
   duration = 60 * 60 * 24 * 30 // 30 days
 ) => {
+  console.log(`Start launching ${projectName}`);
   if (projectName == "project") {
     projectName = projectName + "-" + Date.now().toString();
   }
@@ -47,27 +46,35 @@ const launchProject = async (
   const launchEvent = receipt.events?.find((e) => e.event === "Launch");
 
   if (launchEvent) {
-    return launchEvent.args;
+    const project = launchEvent.args;
+    const projectId = parseInt(project._id);
+    const projectName = project._projectName.toString();
+    const projectOwner = project._owner.toString();
+    const targetFund = project._targetFund.toString();
+    const endUnix = parseInt(project._endAt);
+    const endDate = new Date(endUnix * 1000);
+    formattedEndDate = endDate.toGMTString();
+    console.log(
+      `Project Created - ID: ${projectId}, name: ${projectName}, owner: ${projectOwner}, targetFund: ${targetFund}, endDate: ${formattedEndDate}`
+    );
+    return project;
   }
 
   return null;
 };
 
 const transferNFT = async (projectId) => {
+  console.log(`Start transferring NFT to funders of Project ${projectId}`);
   // const { funders, amounts } = await crowdfundingContract.getFunders(projectId);
   const results = await crowdfundingContract.getFunders(projectId);
   const funders = results[0];
   const amounts = results[1];
-  console.log(funders);
-  console.log(amounts);
 
   // Mint NFTs to funders
   for (let i = 0; i < funders.length; i++) {
     const funder = funders[i];
     const amount = amounts[i].toNumber();
-    const nftAmount = Math.min(Math.floor(amount), 1);
-    console.log(funder);
-    console.log(nftAmount);
+    const nftAmount = Math.max(Math.floor(amount), 1);
     await nftContract.safeMint(funder, nftAmount, {
       gasLimit: 3000000,
     });
@@ -76,6 +83,7 @@ const transferNFT = async (projectId) => {
 };
 
 const fundProject = async (projectId, fundAmount) => {
+  console.log(`Start funding ${fundAmount} to Project ${projectId}`);
   var result = null;
   const options = {
     gasLimit: 3000000,
@@ -110,27 +118,19 @@ const fundProject = async (projectId, fundAmount) => {
 };
 
 const main = async () => {
-  const project = await launchProject();
+  const project = await launchProject(
+    (projectName = "project1"),
+    (desc = "default desc"),
+    (targetFund = 10),
+    (startFromNow = 1), // 1s from now
+    (duration = 60 * 60 * 24 * 30) // 30 days
+  );
   if (project === null) {
     console.log("Fail to launch project");
     return;
   }
-
   const projectId = parseInt(project._id);
-  const projectName = project._projectName.toString();
-  const projectOwner = project._owner.toString();
-  const targetFund = project._targetFund.toString();
-  const endUnix = parseInt(project._endAt);
-  const endDate = new Date(endUnix * 1000);
-  formattedEndDate = endDate.toGMTString();
-  console.log(
-    `Project Created - ID: ${projectId}, name: ${projectName}, owner: ${projectOwner}, targetFund: ${targetFund}, endDate: ${formattedEndDate}`
-  );
-
-  const fundEvent = fundProject(projectId, 10);
-  // await nftContract.safeMint("0x8A1D0a624802E1d40ef6f348Aaf9766cf58e5f93", 1, {
-  //   gasLimit: 3000000,
-  // });
+  const fundEvent = await fundProject(projectId, 10);
 };
 
 main();
