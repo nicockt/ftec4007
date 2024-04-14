@@ -66,7 +66,11 @@ const transferNFT = async (projectId) => {
     const funder = funders[i];
     const amount = amounts[i].toNumber();
     const nftAmount = Math.min(Math.floor(amount), 1);
-    await nftContract.safeMint(funder, nftAmount);
+    console.log(funder);
+    console.log(nftAmount);
+    await nftContract.safeMint(funder, nftAmount, {
+      gasLimit: 3000000,
+    });
     console.log(`Minted ${nftAmount} NFT to ${funder}`);
   }
 };
@@ -106,24 +110,27 @@ const fundProject = async (projectId, fundAmount) => {
 };
 
 const main = async () => {
-  //   const project = await launchProject();
-  //   if (project === null) {
-  //     console.log("Fail to launch project");
-  //     return;
-  //   }
+  const project = await launchProject();
+  if (project === null) {
+    console.log("Fail to launch project");
+    return;
+  }
 
-  //   const projectId = parseInt(project._id);
-  //   const projectName = project._projectName.toString();
-  //   const projectOwner = project._owner.toString();
-  //   const targetFund = project._targetFund.toString();
-  //   const endUnix = parseInt(project._endAt);
-  //   const endDate = new Date(endUnix * 1000);
-  //   formattedEndDate = endDate.toGMTString();
-  //   console.log(
-  //     `Project Created - ID: ${projectId}, name: ${projectName}, owner: ${projectOwner}, targetFund: ${targetFund}, endDate: ${formattedEndDate}`
-  //   );
+  const projectId = parseInt(project._id);
+  const projectName = project._projectName.toString();
+  const projectOwner = project._owner.toString();
+  const targetFund = project._targetFund.toString();
+  const endUnix = parseInt(project._endAt);
+  const endDate = new Date(endUnix * 1000);
+  formattedEndDate = endDate.toGMTString();
+  console.log(
+    `Project Created - ID: ${projectId}, name: ${projectName}, owner: ${projectOwner}, targetFund: ${targetFund}, endDate: ${formattedEndDate}`
+  );
 
-  const fundEvent = fundProject(11, 10);
+  const fundEvent = fundProject(projectId, 10);
+  // await nftContract.safeMint("0x8A1D0a624802E1d40ef6f348Aaf9766cf58e5f93", 1, {
+  //   gasLimit: 3000000,
+  // });
 };
 
 main();
