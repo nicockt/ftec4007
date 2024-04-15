@@ -1,6 +1,6 @@
 const API_URL = process.env.API_URL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const CROWDFUNDING_ADDRESS = "0x51db8d67f51730D11718a64476D4F562aD82f91f";
+const CROWDFUNDING_ADDRESS = "0x2e445522E08c26262ab642313710cB50e9306f71";
 
 // Get ABI for Hardhat
 const crowdfunding = require("../artifacts/contracts/Crowdfunding.sol/Crowdfunding.json");
@@ -22,17 +22,19 @@ const crowdfundingContract = new eth.Contract(
 const launchProject = async (
   projectName = "project",
   desc = "default desc",
+  tokenName = "FTC",
   targetFund = 10,
   startFromNow = 10, // 10s from now
   duration = 60 * 60 * 24 * 30 // 30 days
 ) => {
-  console.log(`Start launching new project: ${projectName}`);
   if (projectName == "project") {
     projectName = projectName + "-" + Date.now().toString();
   }
+  console.log(`Start launching new project: ${projectName}`);
   const transaction = await crowdfundingContract.launch(
     projectName,
     desc,
+    tokenName,
     targetFund,
     startFromNow,
     duration
@@ -51,45 +53,16 @@ const launchProject = async (
     const targetFund = project._targetFund.toString();
     const endUnix = parseInt(project._endAt);
     const endDate = new Date(endUnix * 1000);
+    const nftAddress = project.nft.toString();
     formattedEndDate = endDate.toGMTString();
     console.log(
       `Project Created - ID: ${projectId}, name: ${projectName}, owner: ${projectOwner}, targetFund: ${targetFund}, endDate: ${formattedEndDate}`
     );
+    console.log(`NFT Contract created, address: ${nftAddress}`);
     return project;
   }
 
   return null;
-};
-
-const transferNFT = async (projectId) => {
-  console.log(`Start transferring NFT to funders of Project ${projectId}`);
-  // const { funders, amounts } = await crowdfundingContract.getFunders(projectId);
-  const results = await crowdfundingContract.getFunders(projectId);
-  const funders = results[0];
-  const amounts = results[1];
-
-  // Mint NFTs to funders
-  for (let i = 0; i < funders.length; i++) {
-    const funder = funders[i];
-    const amount = amounts[i].toNumber();
-    const nftAmount = Math.max(Math.floor(amount), 1);
-
-    const NFT = await ethers.getContractFactory("NFT");
-    const NFTDeploy = await NFT.deploy(
-      process.env.OWNER_ADDRESS,
-      "FTEC Crowdfunding",
-      "FTC"
-    );
-    console.log(
-      "NFT Contract created and deployed to address:",
-      NFTDeploy.address
-    );
-    const nftContract = new eth.Contract(NFTDeploy.address, nft.abi, signer);
-    await nftContract.safeMint(funder, nftAmount, {
-      gasLimit: 3000000,
-    });
-    console.log(`Minted ${nftAmount} NFT to ${funder}`);
-  }
 };
 
 const fundProject = async (projectId, fundAmount) => {
@@ -121,8 +94,8 @@ const fundProject = async (projectId, fundAmount) => {
     console.log(
       `Project ${successProjectId}: Funding met target amount, raised amount: ${raisedFund} wei`
     );
+    console.log(`Minted NFT to funder`);
     result = successFundEvent.args;
-    await transferNFT(successProjectId);
   }
   return result;
 };
@@ -131,6 +104,7 @@ const main = async () => {
   const project = await launchProject(
     (projectName = "project"),
     (desc = "default desc"),
+    (tokenName = "FTC"),
     (targetFund = 10),
     (startFromNow = 1), // 1s from now
     (duration = 60 * 60 * 24 * 30) // 30 days

@@ -1,11 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-interface IERC20 {
-    function transfer(address, uint256) external returns (bool);
-    function transferFrom(address, address, uint256) external returns (bool);
-}
-
+import "./NFT.sol";
 
 contract Crowdfunding {
     struct Project {
@@ -20,13 +16,14 @@ contract Crowdfunding {
       address[] fundersAddress;
       string projectName;
       string description;
+      address nft;
     }
 
     uint256 public projectCount = 0; // count total number of existing project
     mapping(uint256 => Project) public projects; // map project id to project
 
     event Cancel(uint256 _id);
-    event Launch(uint256 _id, string _projectName, address indexed _owner, uint256 _targetFund, uint256 _startAt, uint256 _endAt);
+    event Launch(uint256 _id, string _projectName, address indexed _owner, uint256 _targetFund, uint256 _startAt, uint256 _endA, address nft);
     event Fund(uint256 indexed _id, address indexed _funder, uint256 _amount);
     event SuccessFund(uint256 indexed _id, uint256 _raisedFund);
     event OwnerWithdraw(uint256 _id);
@@ -37,7 +34,7 @@ contract Crowdfunding {
 
     fallback() external payable { } 
 
-    function launch(string memory _projectName, string memory _description, uint256 _targetFund, uint256 _startFromNow, uint256 _duration) external returns (uint256){
+    function launch(string memory _projectName, string memory _description, string memory _tokenName, uint256 _targetFund, uint256 _startFromNow, uint256 _duration) external returns (uint256){
         uint256 _startAt = block.timestamp + _startFromNow;
         uint256 _endAt = _startAt + _duration;
         require(_duration > 0, "duration <= 0");
@@ -59,8 +56,10 @@ contract Crowdfunding {
         newProject.description = _description;
         newProject.ownerWithdrawn = false;
         
+        NFT nft = new NFT(address(this), newProject.projectName, _tokenName);
+        newProject.nft = address(nft);
 
-        emit Launch(newProject.id, _projectName, msg.sender, _targetFund, _startAt, _endAt);
+        emit Launch(newProject.id, _projectName, msg.sender, _targetFund, _startAt, _endAt, newProject.nft);
         return newProject.id;
     }
 
@@ -76,7 +75,7 @@ contract Crowdfunding {
       return projects[projectId].endAt;
     }
 
-    function getFunders(uint256 _projectId)external view returns(address[] memory, uint256[] memory){
+    function getFunders(uint256 _projectId)public view returns(address[] memory, uint256[] memory){
       Project storage project = projects[_projectId];
       address[] memory fundersArray = project.fundersAddress;
       uint256[] memory funderAmounts = new uint256[](project.fundersAddress.length);
@@ -138,6 +137,11 @@ contract Crowdfunding {
 
           emit Fund(_id, msg.sender, msg.value);
           if (project.raisedFund >= project.targetFund) {
+            NFT nftInstance = NFT(project.nft);
+            (address[] memory fundersArray, uint[] memory funderAmounts) = getFunders(_id);
+            for (uint i = 0; i < fundersArray.length; i++) {
+                nftInstance.safeMint(fundersArray[i], funderAmounts[i]);
+            }
             emit SuccessFund(_id, project.raisedFund);
           }
       }
