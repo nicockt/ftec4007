@@ -1,25 +1,23 @@
 const API_URL = process.env.API_URL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
 const CROWDFUNDING_ADDRESS = "0x51db8d67f51730D11718a64476D4F562aD82f91f";
-const NFT_ADDRESS = "0xE18d60A586AEa0d58473eD80FC656541d8f72036";
 
 // Get ABI for Hardhat
 const crowdfunding = require("../artifacts/contracts/Crowdfunding.sol/Crowdfunding.json");
 const nft = require("../artifacts/contracts/NFT.sol/NFT.json");
 
 // Ethers.js
-const ethers = require("ethers");
+const eth = require("ethers");
 // Provider: gives you read and write access to the blockchain
-const alchemyProvider = new ethers.providers.JsonRpcProvider(API_URL);
+const alchemyProvider = new eth.providers.JsonRpcProvider(API_URL);
 // Signer: Ethereum account that has the ability to sign transactions
-const signer = new ethers.Wallet(PRIVATE_KEY, alchemyProvider);
+const signer = new eth.Wallet(PRIVATE_KEY, alchemyProvider);
 // Contract: Ethers.js object representing a specific contract deployed on-chain
-const crowdfundingContract = new ethers.Contract(
+const crowdfundingContract = new eth.Contract(
   CROWDFUNDING_ADDRESS,
   crowdfunding.abi,
   signer
 );
-const nftContract = new ethers.Contract(NFT_ADDRESS, nft.abi, signer);
 
 const launchProject = async (
   projectName = "project",
@@ -75,6 +73,18 @@ const transferNFT = async (projectId) => {
     const funder = funders[i];
     const amount = amounts[i].toNumber();
     const nftAmount = Math.max(Math.floor(amount), 1);
+
+    const NFT = await ethers.getContractFactory("NFT");
+    const NFTDeploy = await NFT.deploy(
+      process.env.OWNER_ADDRESS,
+      "FTEC Crowdfunding",
+      "FTC"
+    );
+    console.log(
+      "NFT Contract created and deployed to address:",
+      NFTDeploy.address
+    );
+    const nftContract = new eth.Contract(NFTDeploy.address, nft.abi, signer);
     await nftContract.safeMint(funder, nftAmount, {
       gasLimit: 3000000,
     });
@@ -87,7 +97,7 @@ const fundProject = async (projectId, fundAmount) => {
   var result = null;
   const options = {
     gasLimit: 3000000,
-    value: ethers.utils.parseUnits(fundAmount.toString(), "wei"),
+    value: eth.utils.parseUnits(fundAmount.toString(), "wei"),
   };
   const fundTx = await crowdfundingContract.fund(projectId, {
     ...options,

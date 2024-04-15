@@ -17,10 +17,10 @@ contract NFT is ERC721, ERC721Enumerable, ERC721Pausable, Ownable, ERC721Burnabl
     uint256 public maxmint = 10000;
     uint256 public currentMint;
 
-    constructor(address initialOwner)
-        ERC721("NFT", "FTC")
+    constructor(address initialOwner, string memory projectName, string memory tokenName)
+        ERC721(projectName, tokenName)
         Ownable(initialOwner)
-        EIP712("NFT", "1")
+        EIP712(projectName, "1")
     {}
 
     function pause() public onlyOwner {

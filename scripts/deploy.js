@@ -3,7 +3,6 @@
 
 async function main() {
   const Crowdfunding = await ethers.getContractFactory("Crowdfunding");
-  const NFT = await ethers.getContractFactory("NFT");
 
   // Start deployment, returning a promise that resolves to a contract object
 
@@ -12,9 +11,6 @@ async function main() {
     "Crowdfunding Contract deployed to address:",
     crowdfunding.address
   );
-
-  const nft = await NFT.deploy(process.env.OWNER_ADDRESS);
-  console.log("NFT Contract deployed to address:", nft.address);
 }
 
 main()

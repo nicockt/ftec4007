@@ -39,8 +39,8 @@
       ]
     },
     "/Users/nico/Desktop/GitHub_Projects/ftec4007/contracts/NFT.sol": {
-      "lastModificationDate": 1713095059343,
-      "contentHash": "cff9271459503fe89e8c252b6abd2c28",
+      "lastModificationDate": 1713199305056,
+      "contentHash": "2581ae6cbb56f39cc5ad5a1f50c7f455",
       "sourceName": "contracts/NFT.sol",
       "solcConfig": {
         "version": "0.8.20",
