@@ -2,4 +2,3 @@
 
 Topic: Equity Crowdfunding Smart Contract
 
-![Uploading image.png…]()
