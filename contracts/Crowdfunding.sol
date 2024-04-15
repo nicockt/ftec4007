@@ -23,7 +23,7 @@ contract Crowdfunding {
     mapping(uint256 => Project) public projects; // map project id to project
 
     event Cancel(uint256 _id);
-    event Launch(uint256 _id, string _projectName, address indexed _owner, uint256 _targetFund, uint256 _startAt, uint256 _endA, address nft);
+    event Launch(uint256 _id, string _projectName, address indexed _owner, uint256 _targetFund, uint256 _startAt, uint256 _endAt, address _nft);
     event Fund(uint256 indexed _id, address indexed _funder, uint256 _amount);
     event SuccessFund(uint256 indexed _id, uint256 _raisedFund);
     event OwnerWithdraw(uint256 _id);

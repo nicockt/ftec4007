@@ -47,13 +47,14 @@ const launchProject = async (
 
   if (launchEvent) {
     const project = launchEvent.args;
+    console.log(project);
     const projectId = parseInt(project._id);
     const projectName = project._projectName.toString();
     const projectOwner = project._owner.toString();
     const targetFund = project._targetFund.toString();
     const endUnix = parseInt(project._endAt);
     const endDate = new Date(endUnix * 1000);
-    const nftAddress = project.nft.toString();
+    const nftAddress = project._nft.toString();
     formattedEndDate = endDate.toGMTString();
     console.log(
       `Project Created - ID: ${projectId}, name: ${projectName}, owner: ${projectOwner}, targetFund: ${targetFund}, endDate: ${formattedEndDate}`
@@ -94,7 +95,7 @@ const fundProject = async (projectId, fundAmount) => {
     console.log(
       `Project ${successProjectId}: Funding met target amount, raised amount: ${raisedFund} wei`
     );
-    console.log(`Minted NFT to funder`);
+    console.log(`Minted NFT to funders`);
     result = successFundEvent.args;
   }
   return result;
