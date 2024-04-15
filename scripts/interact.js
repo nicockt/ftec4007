@@ -26,7 +26,7 @@ const launchProject = async (
   startFromNow = 10, // 10s from now
   duration = 60 * 60 * 24 * 30 // 30 days
 ) => {
-  console.log(`Start launching ${projectName}`);
+  console.log(`Start launching new project: ${projectName}`);
   if (projectName == "project") {
     projectName = projectName + "-" + Date.now().toString();
   }
@@ -129,7 +129,7 @@ const fundProject = async (projectId, fundAmount) => {
 
 const main = async () => {
   const project = await launchProject(
-    (projectName = "project1"),
+    (projectName = "project"),
     (desc = "default desc"),
     (targetFund = 10),
     (startFromNow = 1), // 1s from now
