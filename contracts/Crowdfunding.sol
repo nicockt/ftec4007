@@ -3,6 +3,13 @@ pragma solidity ^0.8.20;
 
 import "./NFT.sol";
 
+
+interface IERC20 {
+    function transfer(address, uint256) external returns (bool);
+    function transferFrom(address, address, uint256) external returns (bool);
+}
+
+
 contract Crowdfunding {
     struct Project {
       uint256 id;
@@ -55,6 +62,7 @@ contract Crowdfunding {
         newProject.projectName = _projectName;
         newProject.description = _description;
         newProject.ownerWithdrawn = false;
+        newProject.funders[newProject.owner] = 0;
         
         NFT nft = new NFT(address(this), newProject.projectName, _tokenName);
         newProject.nft = address(nft);
@@ -64,7 +72,13 @@ contract Crowdfunding {
     }
 
     function getMyFund(uint256 projectId) public view returns(uint256) {
-      return projects[projectId].funders[msg.sender];
+      (address[] memory fundersArray, uint[] memory funderAmounts) = getFunders(projectId);
+      for (uint i = 0; i < fundersArray.length; i++) {
+          if (fundersArray[i] == msg.sender) {
+              return funderAmounts[i];
+          }
+      }
+      return 0;
     }
 
     function getRaisedFund(uint256 projectId) public view returns (uint256) {
@@ -127,6 +141,7 @@ contract Crowdfunding {
           require(project.startAt != 0, "Project not exists");  
           require(block.timestamp >= project.startAt, "Not started yet");
           require(block.timestamp <= project.endAt, "Ended");
+          require(project.ownerWithdrawn != true, "owner withdrawn");
 
           //TODO: set the value limit (eg: 100, 1000, 5000)
           (bool success, ) = address(this).call{value: msg.value}("");

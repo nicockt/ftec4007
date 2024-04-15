@@ -1,6 +1,6 @@
 const API_URL = process.env.API_URL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const CROWDFUNDING_ADDRESS = "0x270726C1c3eFcF6908E4882a9F6D24d5344457Bf";
+const CROWDFUNDING_ADDRESS = "0xE02E90F6F0dB2fb72BCaa90cc2Fe614031008A4C";
 
 // Get ABI for Hardhat
 const crowdfunding = require("../artifacts/contracts/Crowdfunding.sol/Crowdfunding.json");
