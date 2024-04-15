@@ -1,6 +1,6 @@
 const API_URL = process.env.API_URL;
 const PRIVATE_KEY = process.env.PRIVATE_KEY;
-const CROWDFUNDING_ADDRESS = "0x2e445522E08c26262ab642313710cB50e9306f71";
+const CROWDFUNDING_ADDRESS = "0x270726C1c3eFcF6908E4882a9F6D24d5344457Bf";
 
 // Get ABI for Hardhat
 const crowdfunding = require("../artifacts/contracts/Crowdfunding.sol/Crowdfunding.json");
@@ -47,7 +47,6 @@ const launchProject = async (
 
   if (launchEvent) {
     const project = launchEvent.args;
-    console.log(project);
     const projectId = parseInt(project._id);
     const projectName = project._projectName.toString();
     const projectOwner = project._owner.toString();
