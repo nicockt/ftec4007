@@ -2,3 +2,4 @@
 
 Topic: Equity Crowdfunding Smart Contract
 
+Please refer to the project report for additional details.
